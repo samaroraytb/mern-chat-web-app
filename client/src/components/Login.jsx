@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Cookies from 'js-cookie';
+import Cookies from "js-cookie";
 // Can use axios instead of fetch()
 
 const initialUserData = {
@@ -9,14 +9,14 @@ const initialUserData = {
   confirmPassword: "",
 };
 
-const initialError = {isError: false, errorMsg: ''}
+const initialMessage = { isSuccess: false, isError: false, message: "" };
 
 const Login = function () {
   const [registerData, updateRegister] = useState(initialUserData);
-  const [errorSubmit, updateError] = useState(initialError);
+  const [message, updateMessage] = useState(initialMessage);
 
   const changeInUserData = (event) => {
-    updateError({isError: false, errorMsg: ""})
+    updateMessage({ isError: false, isSuccess: false, message: "" });
     const { name, value } = event.target;
     switch (name) {
       case "username":
@@ -36,39 +36,64 @@ const Login = function () {
     }
   };
 
-  const clickedToSubmitRegister = async event => {
-    event.preventDefault()
-    const {username, password, email, confirmPassword} = registerData
-    const allFilled =  username !== '' && password !== '' && confirmPassword !== '' && email !== ''
-    if (allFilled === true){
-       if(password === confirmPassword){
+  const clickedToSubmitRegister = async (event) => {
+    event.preventDefault();
+    const { username, password, email, confirmPassword } = registerData;
+    const allFilled =
+      username !== "" &&
+      password !== "" &&
+      confirmPassword !== "" &&
+      email !== "";
+    if (allFilled === true) {
+      if (password === confirmPassword) {
         const newUser = {
-          username, password, email
-        }
+          username,
+          password,
+          email,
+        };
         const options = {
-          method: 'POST',
+          method: "POST",
           body: JSON.stringify(newUser),
-          headers:{
-            'Content-Type' : 'application/json'
-          }
-        }
+          headers: {
+            "Content-Type": "application/json",
+          },
+        };
         const response = await fetch(`http://localhost:3000/register`, options);
-        const data = await response.json()
-        const {token, msg} = data
-        Cookies.set('token', token, { expires: 1 });
-        updateRegister(initialUserData);
-       }else{
-        updateError({isError: true, errorMsg: "Password didn't matched"})
-       }
-    }else{
-        updateError({isError: true, errorMsg: "*Fill all the required details"})
-    }
 
-  }
-  
+        const data = await response.json();
+        if (response.ok === true) {
+          Cookies.set("token", data, { expires: 1 });
+          updateMessage({
+            isError: false,
+            isSuccess: true,
+            message: "User Created Successfully",
+          });
+          updateRegister(initialUserData);
+        } else {
+          updateMessage({ isError: true, isSuccess: false, message: data });
+        }
+      } else {
+        updateMessage({
+          isError: true,
+          isSuccess: false,
+          message: "Password didn't matched",
+        });
+      }
+    } else {
+      updateMessage({
+        isError: true,
+        isSuccess: false,
+        message: "*Fill all the required details",
+      });
+    }
+  };
+
   return (
     <div className="h-[100vh] bg-[#89CFF0] md:w-100 flex flex-col justify-center items-center">
-      <form onSubmit={clickedToSubmitRegister} className="bg-white p-5 m-5 md:w-[300px] max-w-[300px] rounded-xl flex flex-col justify-center items-left">
+      <form
+        onSubmit={clickedToSubmitRegister}
+        className="bg-white p-5 m-5 md:w-[300px] max-w-[300px] rounded-xl flex flex-col justify-center items-left"
+      >
         <label htmlFor="userName">Username</label>
         <input
           onChange={changeInUserData}
@@ -112,7 +137,11 @@ const Login = function () {
         >
           Register
         </button>
-        {errorSubmit.isError && <p className="text-[red] text-center text-sm">{errorSubmit.errorMsg}</p>}
+        {(message.isError || message.isSuccess) && (
+          <p className={`text-${message.isSuccess ? '[green]' : '[red]'} text-center text-sm`}>
+            {message.message}
+          </p>
+        )}
       </form>
     </div>
   );
