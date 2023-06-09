@@ -11,7 +11,7 @@ const initialUserData = {
 
 const initialMessage = { isSuccess: false, isError: false, message: "" };
 
-const Login = function () {
+const Register = function () {
   const [registerData, updateRegister] = useState(initialUserData);
   const [message, updateMessage] = useState(initialMessage);
 
@@ -138,7 +138,7 @@ const Login = function () {
           Register
         </button>
         {(message.isError || message.isSuccess) && (
-          <p className={`text-${message.isSuccess ? '[green]' : '[red]'} text-center text-sm`}>
+          <p className={`${message.isSuccess ? 'text-[green]' : 'text-[red]'} text-center text-sm`}>
             {message.message}
           </p>
         )}
@@ -147,4 +147,4 @@ const Login = function () {
   );
 };
 
-export default Login;
+export default Register;
