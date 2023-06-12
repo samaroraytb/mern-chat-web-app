@@ -2,6 +2,7 @@ const express = require("express");
 const dotenv = require("dotenv");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
+const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
 const User = require("./models/User.js");
 
@@ -18,7 +19,8 @@ app.listen(PORT, () => {
   console.log(`Server Running at Port: http://localhost:${PORT}/`);
 });
 
-// APIs
+// User Register API
+
 const checkDatabaseDuplication = async (request, response, next) => {
   const { username, email } = request.body;
   try {
@@ -40,9 +42,45 @@ const checkDatabaseDuplication = async (request, response, next) => {
 
 app.post("/register", checkDatabaseDuplication, async (request, response) => {
   const { username, password, email } = request.body;
-  const createdUser = await User.create({ username, email, password });
+  const hashPassword = await bcrypt.hash(password, 10);
+
+  const createdUser = await User.create({ username, email, password: hashPassword });
   await jwt.sign({ userId: createdUser._id }, jwtSecret, (error, token) => {
     if (error) throw error;
     response.json(token);
   });
 });
+
+// User Login API
+
+const checkUserValidation = async (request, response, next) => {
+  try {
+    const { username, password } = request.body;
+    const isUsernameAvailable = await User.findOne({username});
+    
+    if (isUsernameAvailable !== null ){
+      const comparedPassword = await bcrypt.compare(password, isUsernameAvailable.password);
+      if (comparedPassword === true){
+        next()
+      }else{
+        response.status(400).json("Password didn't match");
+      }
+    }else{
+      response.status(400).json("Username not Found");
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+app.post("/login", checkUserValidation, async (request, response) => {
+  const {username} = request.body
+  const isUsernameAvailable = await User.findOne({username});
+  const payload = { userId: isUsernameAvailable._id }
+  await jwt.sign(payload, jwtSecret, (error, token) => {
+    if (error) throw error;
+    response.json(token);
+  });
+});
+
+// API 3

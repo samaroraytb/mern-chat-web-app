@@ -13,7 +13,8 @@
   "dependencies": {
     "js-cookie": "^3.0.5",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.12.1"
   },
   "devDependencies": {
     "@rollup/plugin-dynamic-import-vars": "^2.0.3",

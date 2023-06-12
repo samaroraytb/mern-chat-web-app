@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Cookies from "js-cookie";
-// Can use axios instead of fetch()
+import { useNavigate } from "react-router-dom";
 
 const initialUserData = {
   username: "",
@@ -12,6 +12,8 @@ const initialUserData = {
 const initialMessage = { isSuccess: false, isError: false, message: "" };
 
 const Register = function () {
+  const navigate = useNavigate()
+
   const [registerData, updateRegister] = useState(initialUserData);
   const [message, updateMessage] = useState(initialMessage);
 
@@ -68,6 +70,7 @@ const Register = function () {
             isSuccess: true,
             message: "User Created Successfully",
           });
+          navigate('/', {replace: true})
           updateRegister(initialUserData);
         } else {
           updateMessage({ isError: true, isSuccess: false, message: data });
